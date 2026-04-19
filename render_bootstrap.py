@@ -5,16 +5,24 @@ from pathlib import Path
 
 def bootstrap_django_settings() -> None:
     root = Path(__file__).resolve().parent
+    search_roots = [root, root / "turismo_django"]
 
-    candidates = [
-        (root, "turismo_django.settings"),
-        (root / "turismo_django", "turismo_django.settings"),
-    ]
+    for base in search_roots:
+        if not base.exists():
+            continue
+        for settings_file in base.rglob("settings.py"):
+            if settings_file.parent.name != "turismo_django":
+                continue
 
-    for path_to_add, settings_module in candidates:
-        if (path_to_add / "turismo_django" / "settings.py").exists():
-            sys.path.insert(0, str(path_to_add))
-            os.environ.setdefault("DJANGO_SETTINGS_MODULE", settings_module)
+            project_root = settings_file.parent.parent
+            if str(project_root) not in sys.path:
+                sys.path.insert(0, str(project_root))
+            if str(root) not in sys.path:
+                sys.path.insert(0, str(root))
+
+            os.environ["DJANGO_SETTINGS_MODULE"] = "turismo_django.settings"
             return
 
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "turismo_django.settings")
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+    os.environ["DJANGO_SETTINGS_MODULE"] = "turismo_django.settings"
