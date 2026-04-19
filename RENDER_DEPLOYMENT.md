@@ -9,11 +9,11 @@ En Render crea un **Web Service** desde tu repo de GitHub.
 - Environment: `Python 3`
 - Build Command:
   ```bash
-  pip install -r requirements.txt && PYTHONPATH=. python manage.py collectstatic --noinput && PYTHONPATH=. python manage.py migrate --noinput
+  pip install -r requirements.txt && python render_manage.py collectstatic --noinput && python render_manage.py migrate --noinput
   ```
 - Start Command:
   ```bash
-  gunicorn turismo_django.wsgi:application --bind 0.0.0.0:$PORT --chdir . --pythonpath .
+  gunicorn wsgi_render:application --bind 0.0.0.0:$PORT
   ```
 
 ## 2) Variables de entorno

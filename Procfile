@@ -1,1 +1,1 @@
-web: gunicorn turismo_django.wsgi:application --bind 0.0.0.0:$PORT --chdir . --pythonpath .
+web: gunicorn wsgi_render:application --bind 0.0.0.0:$PORT

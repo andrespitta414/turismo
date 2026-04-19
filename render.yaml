@@ -4,8 +4,8 @@ services:
     env: python
     plan: free
     region: oregon
-    buildCommand: pip install -r requirements.txt && PYTHONPATH=. python manage.py collectstatic --noinput && PYTHONPATH=. python manage.py migrate --noinput
-    startCommand: gunicorn turismo_django.wsgi:application --bind 0.0.0.0:$PORT --chdir . --pythonpath .
+    buildCommand: pip install -r requirements.txt && python render_manage.py collectstatic --noinput && python render_manage.py migrate --noinput
+    startCommand: gunicorn wsgi_render:application --bind 0.0.0.0:$PORT
     envVars:
       - key: DJANGO_SECRET_KEY
         generateValue: true
