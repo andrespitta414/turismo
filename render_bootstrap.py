@@ -18,13 +18,10 @@ def bootstrap_django_settings() -> None:
     for settings_file in root.rglob("settings.py"):
         if any(part in ignored_parts for part in settings_file.parts):
             continue
-        parent_dir = settings_file.parent
-        package_init = parent_dir / "__init__.py"
-        urls_file = parent_dir / "urls.py"
-        if package_init.exists() and urls_file.exists():
-            candidates.append(settings_file)
+        candidates.append(settings_file)
 
     if candidates:
+        candidates = sorted(candidates, key=lambda path: len(path.parts))
         settings_file = candidates[0]
         package_dir = settings_file.parent
         project_root = package_dir.parent
