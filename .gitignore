@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.sqlite3
+
+# Virtual environments
+.venv/
+venv/
+env/
+turismo_django/.venv/
+
+# IDE
+.vscode/
+.idea/
+
+# Django static collection
+staticfiles/
+
+# OS
+.DS_Store
+Thumbs.db
