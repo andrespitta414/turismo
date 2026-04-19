@@ -1,6 +1,6 @@
 """
 TurismoDjango - Settings Configuration
-Configuracion del proyecto Django para desarrollo y AWS Elastic Beanstalk.
+Configuracion del proyecto Django para desarrollo y produccion.
 """
 
 import os
@@ -23,13 +23,6 @@ def get_list_env(name, default=None):
     raw_value = os.environ.get(name, "")
     values = [item.strip() for item in raw_value.split(",") if item.strip()]
     return values if values else (default or [])
-
-
-def get_int_env(name, default=0):
-    value = os.environ.get(name)
-    if value is None or value.strip() == "":
-        return default
-    return int(value)
 
 
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "django-insecure-turismo-dev-only")
@@ -91,46 +84,15 @@ TEMPLATES = [
 WSGI_APPLICATION = "turismo_django.wsgi.application"
 
 
-DB_ENGINE = os.environ.get("DB_ENGINE", "").strip().lower()
+if os.environ.get("DATABASE_URL"):
+    import dj_database_url
 
-if DB_ENGINE == "mssql":
     DATABASES = {
-        "default": {
-            "ENGINE": "mssql",
-            "NAME": os.environ.get("DB_NAME", ""),
-            "USER": os.environ.get("DB_USER", ""),
-            "PASSWORD": os.environ.get("DB_PASSWORD", ""),
-            "HOST": os.environ.get("DB_HOST", ""),
-            "PORT": os.environ.get("DB_PORT", "1433"),
-            "OPTIONS": {
-                "driver": os.environ.get("DB_DRIVER", "ODBC Driver 18 for SQL Server"),
-                "extra_params": os.environ.get(
-                    "DB_EXTRA_PARAMS",
-                    "Encrypt=yes;TrustServerCertificate=yes",
-                ),
-                "connection_timeout": get_int_env("DB_CONNECTION_TIMEOUT", 30),
-                "connection_retries": get_int_env("DB_CONNECTION_RETRIES", 5),
-                "connection_retry_backoff_time": get_int_env(
-                    "DB_CONNECTION_RETRY_BACKOFF_TIME",
-                    5,
-                ),
-                "query_timeout": get_int_env("DB_QUERY_TIMEOUT", 30),
-            },
-        }
-    }
-elif os.environ.get("RDS_DB_NAME"):
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": os.environ.get("RDS_DB_NAME"),
-            "USER": os.environ.get("RDS_USERNAME"),
-            "PASSWORD": os.environ.get("RDS_PASSWORD"),
-            "HOST": os.environ.get("RDS_HOSTNAME"),
-            "PORT": os.environ.get("RDS_PORT", "5432"),
-            "OPTIONS": {
-                "sslmode": "require",
-            },
-        }
+        "default": dj_database_url.config(
+            default=os.environ.get("DATABASE_URL"),
+            conn_max_age=600,
+            ssl_require=True,
+        )
     }
 else:
     DATABASES = {
@@ -139,12 +101,6 @@ else:
             "NAME": BASE_DIR / "db.sqlite3",
         }
     }
-
-
-DATABASE_CONNECTION_POOLING = get_bool_env(
-    "DATABASE_CONNECTION_POOLING",
-    default=True,
-)
 
 
 AUTH_PASSWORD_VALIDATORS = [
