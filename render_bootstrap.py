@@ -1,5 +1,6 @@
 import os
 import sys
+import importlib
 from pathlib import Path
 
 
@@ -19,22 +20,41 @@ def bootstrap_django_settings() -> None:
             continue
         parent_dir = settings_file.parent
         package_init = parent_dir / "__init__.py"
-        wsgi_file = parent_dir / "wsgi.py"
-        if package_init.exists() and wsgi_file.exists():
+        urls_file = parent_dir / "urls.py"
+        if package_init.exists() and urls_file.exists():
             candidates.append(settings_file)
 
     if candidates:
         settings_file = candidates[0]
         package_dir = settings_file.parent
         project_root = package_dir.parent
-        settings_module = f"{package_dir.name}.settings"
+        package_name = package_dir.name
 
         if str(project_root) not in sys.path:
             sys.path.insert(0, str(project_root))
         if str(root) not in sys.path:
             sys.path.insert(0, str(root))
 
-        os.environ["DJANGO_SETTINGS_MODULE"] = settings_module
+        discovered_pkg = importlib.import_module(package_name)
+        if package_name != "turismo_django":
+            sys.modules["turismo_django"] = discovered_pkg
+            try:
+                settings_mod = importlib.import_module(f"{package_name}.settings")
+                sys.modules["turismo_django.settings"] = settings_mod
+            except Exception:
+                pass
+            try:
+                urls_mod = importlib.import_module(f"{package_name}.urls")
+                sys.modules["turismo_django.urls"] = urls_mod
+            except Exception:
+                pass
+            try:
+                wsgi_mod = importlib.import_module(f"{package_name}.wsgi")
+                sys.modules["turismo_django.wsgi"] = wsgi_mod
+            except Exception:
+                pass
+
+        os.environ["DJANGO_SETTINGS_MODULE"] = "turismo_django.settings"
         return
 
     if str(root) not in sys.path:
