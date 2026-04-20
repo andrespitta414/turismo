@@ -1,44 +1,70 @@
-import importlib.util
-import sys
+import os
 from pathlib import Path
 
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent
 
-ROOT_DIR = Path(__file__).resolve().parent
-IGNORED_PARTS = {".venv", "venv", ".git", "__pycache__", "site-packages"}
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = '12345'
 
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = True
 
-def _find_project_settings() -> Path:
-    candidates: list[Path] = []
-    for settings_file in ROOT_DIR.rglob("settings.py"):
-        if settings_file == Path(__file__).resolve():
-            continue
-        if any(part in IGNORED_PARTS for part in settings_file.parts):
-            continue
-        if (settings_file.parent / "wsgi.py").exists():
-            candidates.append(settings_file)
+ALLOWED_HOSTS = ['*']
 
-    if not candidates:
-        raise RuntimeError("Could not locate Django project settings.py")
+# Application definition
+INSTALLED_APPS = [
+    'django.contrib.contenttypes',
+    'django.contrib.auth',
+    # Agrega tus apps aquí
+]
 
-    candidates.sort(key=lambda path: len(path.parts))
-    return candidates[0]
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'django.middleware.common.CommonMiddleware',
+]
 
+ROOT_URLCONF = 'urls'  # Cambiar si tienes otro archivo de URLs
 
-PROJECT_SETTINGS_PATH = _find_project_settings()
-PROJECT_ROOT = PROJECT_SETTINGS_PATH.parent.parent
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+            ],
+        },
+    },
+]
 
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
-if str(ROOT_DIR) not in sys.path:
-    sys.path.insert(0, str(ROOT_DIR))
+WSGI_APPLICATION = 'wsgi.application'  # Cambiar según tu wsgi.py
 
-spec = importlib.util.spec_from_file_location("_project_settings", PROJECT_SETTINGS_PATH)
-if spec is None or spec.loader is None:
-    raise RuntimeError(f"Could not load settings spec from {PROJECT_SETTINGS_PATH}")
+# Database
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
 
-module = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(module)
+# Password validation
+AUTH_PASSWORD_VALIDATORS = [
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
+]
 
-for name in dir(module):
-    if name.isupper():
-        globals()[name] = getattr(module, name)
+LANGUAGE_CODE = 'es-es'
+TIME_ZONE = 'America/Bogota'
+USE_I18N = True
+USE_TZ = True
+
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
